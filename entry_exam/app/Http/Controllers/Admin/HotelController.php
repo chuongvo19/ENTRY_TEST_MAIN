@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use App\Models\Hotel;
 use App\Models\Prefecture;
 use Illuminate\Http\RedirectResponse;
+use PhpParser\Node\Scalar\MagicConst\Dir;
 
 class HotelController extends Controller
 {
@@ -24,9 +25,15 @@ class HotelController extends Controller
         return view('admin.hotel.result');
     }
 
-    public function showEdit(): View
+    public function showEdit(Request $request): View
     {
-        return view('admin.hotel.edit');
+        $listPrefecture = Prefecture::all();
+        $hotelInfo = Hotel::findOrFail($request->input('hotel_id'));
+        return view('admin.hotel.edit', compact(
+                'listPrefecture',
+                'hotelInfo'
+            )
+        );
     }
 
     public function showCreate(): View
@@ -50,9 +57,37 @@ class HotelController extends Controller
         return view('admin.hotel.result', $var);
     }
 
-    public function edit(Request $request): void
+    public function edit(HotelRequest $request): RedirectResponse
     {
-        //
+        $validateData = $request->validated();
+        $hotel = Hotel::findOrFail($request->input('hotel_id'));
+        $hotel->hotel_name = $request->input('hotel_name');
+        $hotel->prefecture_id = $request->input('prefecture_id');
+
+        if($request->hasFile('file_path'))
+        {
+            $oldImagePath = $hotel->file_path;
+
+            $image = $request->file('file_path');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('assets/img/hotel'), $imageName);
+            $hotel->file_path = 'hotel' . DIRECTORY_SEPARATOR . $imageName;
+        }
+
+        try {
+            $hotel->save();
+            if(
+                isset($oldImagePath) &&
+                file_exists(public_path('assets/img') .DIRECTORY_SEPARATOR . $oldImagePath)
+            ) 
+            {
+                unlink(public_path('assets/img') .DIRECTORY_SEPARATOR . $oldImagePath);
+            }
+            return redirect()->back()->with('success', 'ホテル情報の編集が成功しました ');
+        } catch (\Throwable $th) {
+            //throw $th;
+            return redirect()->back()->with('error', 'ホテル情報の編集に失敗しました');
+        }
     }
 
     public function create(HotelRequest $request): RedirectResponse
