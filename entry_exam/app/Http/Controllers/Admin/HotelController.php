@@ -50,7 +50,8 @@ class HotelController extends Controller
         $hotelId = $request->input('hotel_id');
         if(
             !empty($request->input('file_path')) &&
-            file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') )
+            file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') ) &&
+            $request->input('file_path') != 'hotel/default_image.jpg'
         ) {
             unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') );
         }
@@ -115,7 +116,8 @@ class HotelController extends Controller
             $oldPath = Hotel::getPathImageWithId($hotel_id);
             if(
                 !empty($request->input('file_path')) &&
-                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath )
+                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath ) &&
+                $oldPath != 'hotel/default_image.jpg'
             ) {
                 unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath);
             }
@@ -159,7 +161,8 @@ class HotelController extends Controller
             $filePath = Hotel::getPathImageWithId($hotel_id);
             Hotel::destroy($hotel_id);
             if(
-                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath )
+                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath ) &&
+                $filePath != 'hotel/default_image.jpg'
             ) {
                 unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath);
             }
