@@ -16,6 +16,14 @@
             <form action="{{ route('adminHotelSearchResult') }}" method="post">
                 @csrf
                 <input type="text" name="hotel_name" value="" placeholder="ホテル名">
+                <select name="prefecture_id" id="preteturies">
+                    <option value="">--Prefecture--</option>
+                    @foreach ($listPrefecture as $prefecture)
+                        <option value="{{ $prefecture->prefecture_id }}"
+                            {{ old('prefecture_id') == $prefecture->prefecture_id ? 'selected' : '' }}>
+                            {{ $prefecture->prefecture_name }}</option>
+                    @endforeach
+                </select>
                 <button type="submit">検索</button>
             </form>
             @error('hotel_name')

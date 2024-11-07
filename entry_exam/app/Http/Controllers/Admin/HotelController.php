@@ -17,12 +17,14 @@ class HotelController extends Controller
 
     public function showSearch(): View
     {
-        return view('admin.hotel.search');
+        $listPrefecture = Prefecture::all();
+        return view('admin.hotel.search', compact('listPrefecture'));
     }
 
     public function showResult(): View
     {
-        return view('admin.hotel.result');
+        $listPrefecture = Prefecture::all();
+        return view('admin.hotel.result', compact('listPrefecture'));
     }
 
     public function showEdit(Request $request): View
@@ -48,12 +50,12 @@ class HotelController extends Controller
     public function cancelEdit(Request $request): RedirectResponse
     {
         $hotelId = $request->input('hotel_id');
-        if(
+        if (
             !empty($request->input('file_path')) &&
-            file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') ) &&
+            file_exists(public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path')) &&
             $request->input('file_path') != 'hotel/default_image.jpg'
         ) {
-            unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') );
+            unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path'));
         }
         return redirect()->route('adminHotelEditPage', ['hotel_id' => $hotelId]);
     }
@@ -100,9 +102,15 @@ class HotelController extends Controller
         $var = [];
 
         $hotelNameToSearch = $request->input('hotel_name');
-        $hotelList = Hotel::getHotelListByName($hotelNameToSearch);
-
+        $hotelPrefectureId = $request->input('prefecture_id');
+        if(empty($hotelPrefectureId))
+        {
+            $hotelList = Hotel::getHotelListByName($hotelNameToSearch);
+        } else {
+            $hotelList = Hotel::getHotelListByNameAndPrefectureId($hotelNameToSearch, $hotelPrefectureId);
+        }
         $var['hotelList'] = $hotelList;
+        $var['listPrefecture'] = Prefecture::all();
 
         return view('admin.hotel.result', $var);
     }
@@ -114,9 +122,9 @@ class HotelController extends Controller
 
         try {
             $oldPath = Hotel::getPathImageWithId($hotel_id);
-            if(
+            if (
                 !empty($request->input('file_path')) &&
-                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath ) &&
+                file_exists(public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath) &&
                 $oldPath != 'hotel/default_image.jpg'
             ) {
                 unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath);
@@ -160,15 +168,15 @@ class HotelController extends Controller
         try {
             $filePath = Hotel::getPathImageWithId($hotel_id);
             Hotel::destroy($hotel_id);
-            if(
-                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath ) &&
+            if (
+                file_exists(public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath) &&
                 $filePath != 'hotel/default_image.jpg'
             ) {
                 unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath);
             }
             return redirect()->route('adminHotelSearchPage')->with('success', '情報の削除が成功しました');
         } catch (\Exception $e) {
-            return redirect()->route('adminHotelSearchPage')->with('success', '情報の削除に失敗しました'); 
+            return redirect()->route('adminHotelSearchPage')->with('success', '情報の削除に失敗しました');
         }
     }
 }

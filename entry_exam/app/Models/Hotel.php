@@ -42,6 +42,24 @@ class Hotel extends Model
     }
 
     /**
+     * Search hotel by hotel name and prefecture
+     *
+     * @param string $hotelName
+     * @param string $prefecture_id
+     * @return array
+     */
+    static public function getHotelListByNameAndPrefectureId(string $hotelName, string $prefectureId): array
+    {
+        $result = Hotel::where('hotel_name', 'like', '%' . $hotelName . '%')
+            ->where('prefecture_id', '=', $prefectureId)
+            ->with('prefecture')
+            ->get()
+            ->toArray();
+
+        return $result;
+    }
+
+    /**
      * Override serializeDate method to customize date format
      *
      * @param  \DateTimeInterface  $date
