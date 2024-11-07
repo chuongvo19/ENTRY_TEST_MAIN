@@ -15,5 +15,8 @@
         <x-admin.side-menu />
         @yield('main_contents')
         @yield('page_js')
+        <script>
+            @vite('resources/js/app.js')
+        </script>
     </body>
 </html>

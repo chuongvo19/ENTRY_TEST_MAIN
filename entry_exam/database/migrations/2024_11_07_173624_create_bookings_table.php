@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('booking_id');
             $table->foreignId('hotel_id')->constrained('hotels', 'hotel_id')->onDelete('cascade');
             $table->string('customer_name', 255);
-            $table->string('customer_contact', 255);
+            $table->bigInteger('customer_contact');
             $table->timestamp('checkin_time');
             $table->timestamp('checkout_time');
             $table->timestamps();
