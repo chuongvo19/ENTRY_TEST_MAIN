@@ -18,6 +18,9 @@
                 <input type="text" name="hotel_name" value="" placeholder="ホテル名">
                 <button type="submit">検索</button>
             </form>
+            @error('hotel_name')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
         <hr>
         <div class="aler-message">

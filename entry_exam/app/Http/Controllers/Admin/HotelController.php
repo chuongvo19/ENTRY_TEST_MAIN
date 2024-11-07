@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HotelRequest;
+use App\Http\Requests\SearchRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Hotel;
@@ -92,8 +93,9 @@ class HotelController extends Controller
         return view('admin.hotel.confirm', compact('dataConfirm'));
     }
 
-    public function searchResult(Request $request): View
+    public function searchResult(SearchRequest $request): View
     {
+        $request->validated();
         $var = [];
 
         $hotelNameToSearch = $request->input('hotel_name');
