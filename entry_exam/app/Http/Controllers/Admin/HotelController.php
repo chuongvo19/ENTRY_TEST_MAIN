@@ -9,7 +9,6 @@ use Illuminate\View\View;
 use App\Models\Hotel;
 use App\Models\Prefecture;
 use Illuminate\Http\RedirectResponse;
-use PhpParser\Node\Scalar\MagicConst\Dir;
 
 class HotelController extends Controller
 {
@@ -29,7 +28,9 @@ class HotelController extends Controller
     {
         $listPrefecture = Prefecture::all();
         $hotelInfo = Hotel::findOrFail($request->input('hotel_id'));
-        return view('admin.hotel.edit', compact(
+        return view(
+            'admin.hotel.edit',
+            compact(
                 'listPrefecture',
                 'hotelInfo'
             )
@@ -43,7 +44,53 @@ class HotelController extends Controller
         return view('admin.hotel.create', compact('listPrefecture'));
     }
 
+    public function cancelEdit(Request $request): RedirectResponse
+    {
+        $hotelId = $request->input('hotel_id');
+        if(
+            !empty($request->input('file_path')) &&
+            file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') )
+        ) {
+            unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $request->input('file_path') );
+        }
+        return redirect()->route('adminHotelEditPage', ['hotel_id' => $hotelId]);
+    }
+
     /** post methods */
+
+
+    public function confirm(HotelRequest $request): View
+    {
+        $validateData = $request->validated();
+        $isUploadImage = false;
+        if ($request->hasFile('file_path')) {
+            $isUploadImage = true;
+            $image = $request->file('file_path');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('assets/img/hotel'), $imageName);
+        } else {
+            $imageName = Hotel::select('file_path')->where('hotel_id', $request->input('hotel_id'))->value('file_path');
+        }
+
+        $prefecture = Prefecture::select('prefecture_name')
+            ->where('prefecture_id', $request->input('prefecture_id'))
+            ->value('prefecture_name');
+
+        $dataConfirm = [
+            'hotel_id' => $request->input('hotel_id'),
+            'hotel_name' => $request->input('hotel_name'),
+            'prefecture' => [
+                'id' => $request->input('prefecture_id'),
+                'name' => $prefecture
+            ],
+            'file_path' => [
+                'is-upload-image' => $isUploadImage,
+                'path' => ($isUploadImage) ? 'hotel' . DIRECTORY_SEPARATOR . $imageName : $imageName
+            ]
+        ];
+
+        return view('admin.hotel.confirm', compact('dataConfirm'));
+    }
 
     public function searchResult(Request $request): View
     {
@@ -57,36 +104,24 @@ class HotelController extends Controller
         return view('admin.hotel.result', $var);
     }
 
-    public function edit(HotelRequest $request): RedirectResponse
+    public function edit(Request $request): RedirectResponse
     {
-        $validateData = $request->validated();
-        $hotel = Hotel::findOrFail($request->input('hotel_id'));
-        $hotel->hotel_name = $request->input('hotel_name');
-        $hotel->prefecture_id = $request->input('prefecture_id');
-
-        if($request->hasFile('file_path'))
-        {
-            $oldImagePath = $hotel->file_path;
-
-            $image = $request->file('file_path');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('assets/img/hotel'), $imageName);
-            $hotel->file_path = 'hotel' . DIRECTORY_SEPARATOR . $imageName;
-        }
+        $hotel_id = $request->input('hotel_id');
+        $hotel = Hotel::findOrFail($hotel_id);
 
         try {
-            $hotel->save();
+            $oldPath = Hotel::getPathImageWithId($hotel_id);
             if(
-                isset($oldImagePath) &&
-                file_exists(public_path('assets/img') .DIRECTORY_SEPARATOR . $oldImagePath)
-            ) 
-            {
-                unlink(public_path('assets/img') .DIRECTORY_SEPARATOR . $oldImagePath);
+                !empty($request->input('file_path')) &&
+                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath )
+            ) {
+                unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $oldPath);
             }
-            return redirect()->back()->with('success', 'ホテル情報の編集が成功しました ');
-        } catch (\Throwable $th) {
-            //throw $th;
-            return redirect()->back()->with('error', 'ホテル情報の編集に失敗しました');
+            $hotel->update($request->all());
+
+            return redirect()->route('adminHotelEditPage', ['hotel_id' => $hotel_id])->with('success', '情報の編集が成功しました');
+        } catch (\Exception $e) {
+            return redirect()->route('adminHotelEditPage', ['hotel_id' => $hotel_id])->with('error', '情報の編集に失敗しました');
         }
     }
 
@@ -94,8 +129,7 @@ class HotelController extends Controller
     {
         $validateData = $request->validated();
 
-        if($request->hasFile('file_path'))
-        {
+        if ($request->hasFile('file_path')) {
             $image = $request->file('file_path');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('assets/img/hotel'), $imageName);

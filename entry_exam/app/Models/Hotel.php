@@ -51,4 +51,21 @@ class Hotel extends Model
     {
         return $date->format('Y-m-d H:i:s');
     }
+
+    /**
+     * Get path image with id hotel
+     * 
+     * @param string $hotel_id
+     * @return string
+     */
+    static public function getPathImageWithId(string $hotel_id): string
+    {
+        $result = Hotel::select('file_path')
+            ->where('hotel_id', $hotel_id)
+            ->value('file_path');
+
+        return $result;
+    }
+
+    protected $fillable = ['hotel_id', 'hotel_name', 'prefecture_id', 'file_path'];
 }

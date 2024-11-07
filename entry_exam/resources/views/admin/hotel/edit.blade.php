@@ -11,7 +11,7 @@
         <hr>
         <div class="form-post-wrapper">
             <x-alert />
-            <form action="{{ route('adminHotelEditProcess') }}" method="post" enctype="multipart/form-data">
+            <form action="{{ route('adminHotelConfirmProcess') }}" method="post" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="hotel_id" value="{{ $hotelInfo->hotel_id }}" />
                 <table class="table-border-none">
@@ -52,7 +52,8 @@
                         <tr>
                             <td></td>
                             <td>
-                                <img style="    width: 33.33%; height: auto;" src="/assets/img/{{ $hotelInfo->file_path }}" alt="{{ $hotelInfo->hotel_name }}">
+                                <img style="width: 33.33%; height: auto;" src="/assets/img/{{ $hotelInfo->file_path }}"
+                                    alt="{{ $hotelInfo->hotel_name }}">
                             </td>
                         </tr>
                         {{-- image hotel --}}
@@ -69,7 +70,7 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <button type="submit">Continue</button>
+                                <button type="submit">送信</button>
                             </td>
                         </tr>
                     </tbody>
