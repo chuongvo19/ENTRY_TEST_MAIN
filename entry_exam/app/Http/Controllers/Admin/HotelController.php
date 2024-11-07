@@ -150,8 +150,20 @@ class HotelController extends Controller
         }
     }
 
-    public function delete(Request $request): void
+    public function delete(Request $request): RedirectResponse
     {
-        //
+        $hotel_id = $request->input('hotel_id');
+        try {
+            $filePath = Hotel::getPathImageWithId($hotel_id);
+            Hotel::destroy($hotel_id);
+            if(
+                file_exists( public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath )
+            ) {
+                unlink(public_path('assets/img') . DIRECTORY_SEPARATOR . $filePath);
+            }
+            return redirect()->route('adminHotelSearchPage')->with('success', '情報の削除が成功しました');
+        } catch (\Exception $e) {
+            return redirect()->route('adminHotelSearchPage')->with('success', '情報の削除に失敗しました'); 
+        }
     }
 }

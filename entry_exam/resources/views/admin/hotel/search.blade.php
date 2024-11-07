@@ -20,6 +20,9 @@
             </form>
         </div>
         <hr>
+        <div class="aler-message">
+            <x-alert />
+        </div>
     </div>
     @yield('search_results')
 @endsection

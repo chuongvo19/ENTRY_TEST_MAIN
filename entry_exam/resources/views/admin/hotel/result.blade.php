@@ -23,7 +23,7 @@
                             <td class="btn_center" id="edit"></td>
                             <td class="btn_center" id="delete"></td>
                         </tr>
-                        @foreach($hotelList as $hotel)
+                        @foreach ($hotelList as $hotel)
                             <tr style="background-color:#BDF1FF">
                                 <td>
                                     <a href="" target="_blank">{{ $hotel['hotel_name'] }}</a>
@@ -48,7 +48,9 @@
                                     <form action="{{ route('adminHotelDeleteProcess') }}" method="post">
                                         @csrf
                                         <input type="hidden" name="hotel_id" value="{{ $hotel['hotel_id'] }}">
-                                        <button type="submit">削除</button>
+                                        <button
+                                            onclick="return confirm('本当にホテルの情報を削除してもよろしいですか？');"
+                                            type="submit">削除</button>
                                     </form>
                                 </td>
                             </tr>
